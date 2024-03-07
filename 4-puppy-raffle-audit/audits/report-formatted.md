@@ -1,3 +1,116 @@
+---
+title: PuppyRaffle Report
+author: Alberto G.F.
+date: March 7, 2024
+header-includes:
+  - \usepackage{titling}
+  - \usepackage{graphicx}
+---
+
+
+
+<!-- Your report starts here! -->
+
+Prepared by: [Cyfrin](https://cyfrin.io)
+Lead Auditors:
+
+- xxxxxxx
+
+# Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Protocol Summary](#protocol-summary)
+- [Disclaimer](#disclaimer)
+- [Risk Classification](#risk-classification)
+- [Audit Details](#audit-details)
+  - [Scope](#scope)
+  - [Roles](#roles)
+- [Executive Summary](#executive-summary)
+  - [Issues found](#issues-found)
+- [Findings](#findings)
+  - [HIGH](#high)
+    - [\[H-1\] Reentrancy attack in `PuppyRaffle::refund` allows entratn to d](#h-1-reentrancy-attack-in-puppyrafflerefund-allows-entratn-to-d)
+    - [\[H-2\] weak Randomness in `PuppyRaffle::selectWinner` allows users to influence or predict the winner and influence the winning puppy (2-FINDINGS)](#h-2-weak-randomness-in-puppyraffleselectwinner-allows-users-to-influence-or-predict-the-winner-and-influence-the-winning-puppy-2-findings)
+    - [\[H-3\] Integer overflow of `PuppyRaffle::totalFees` loses fees](#h-3-integer-overflow-of-puppyraffletotalfees-loses-fees)
+  - [MEDIUM](#medium)
+    - [\[M-1\] Looping thought players array to check duplicates in `PuppyRuffles::enterRuffle` is a potential denial of service (DoS) attack incrementing the gas costs for the future entrants](#m-1-looping-thought-players-array-to-check-duplicates-in-puppyrufflesenterruffle-is-a-potential-denial-of-service-dos-attack-incrementing-the-gas-costs-for-the-future-entrants)
+    - [\[M-2\] Unsafe cast of `PuppyRaffle::fee` loses fees](#m-2-unsafe-cast-of-puppyrafflefee-loses-fees)
+    - [\[M-3\] Smart contract wallets raffle winners without a `receive` or a `fallback` function will block the start of a new contest](#m-3-smart-contract-wallets-raffle-winners-without-a-receive-or-a-fallback-function-will-block-the-start-of-a-new-contest)
+  - [LOW](#low)
+    - [\[L-1\] `PuppyRuffle::getActivePlayerIndex` returns 0 for non-existent players and for players at index 0, causing a player at index 0 to incorrectly think they have not entered the raffle](#l-1-puppyrufflegetactiveplayerindex-returns-0-for-non-existent-players-and-for-players-at-index-0-causing-a-player-at-index-0-to-incorrectly-think-they-have-not-entered-the-raffle)
+  - [GAS](#gas)
+    - [\[G-1\] Unchanged state variables should be declared constatn or inmutable](#g-1-unchanged-state-variables-should-be-declared-constatn-or-inmutable)
+    - [\[G-2\] Storage variable in a loop should be cast](#g-2-storage-variable-in-a-loop-should-be-cast)
+  - [Informational/Non-critics](#informationalnon-critics)
+    - [\[I-1\] Solidity pragma should be specific, not wide](#i-1-solidity-pragma-should-be-specific-not-wide)
+    - [\[I-2\] Using a outdated version of Solidity is not recommended.](#i-2-using-a-outdated-version-of-solidity-is-not-recommended)
+    - [\[I-3\] Missing checks for `address(0)` when assigning values to address state variables](#i-3-missing-checks-for-address0-when-assigning-values-to-address-state-variables)
+    - [\[I-4\] `PuppyRaffle::selectWinner` does not follow CEI, which is not the best practice](#i-4-puppyraffleselectwinner-does-not-follow-cei-which-is-not-the-best-practice)
+    - [\[I-5\] Use of "magic" numbers is discouraged](#i-5-use-of-magic-numbers-is-discouraged)
+    - [\[I-6\] State changes are missing events](#i-6-state-changes-are-missing-events)
+    - [\[I-7\] `PuppyRaffle::_isActivePlayer` is never used and should be removed](#i-7-puppyraffle_isactiveplayer-is-never-used-and-should-be-removed)
+
+# Protocol Summary
+
+This project is to enter a raffle to win a cute dog NFT. The protocol should do the following:
+
+1. Call the `enterRaffle` function with the following parameters:
+   1. `address[] participants`: A list of addresses that enter. You can use this to enter yourself multiple times, or yourself and a group of your friends.
+2. Duplicate addresses are not allowed
+3. Users are allowed to get a refund of their ticket & `value` if they call the `refund` function
+4. Every X seconds, the raffle will be able to draw a winner and be minted a random puppy
+5. The owner of the protocol will set a feeAddress to take a cut of the `value`, and the rest of the funds will be sent to the winner of the puppy.
+
+# Disclaimer
+
+The YOUR_NAME_HERE team makes all effort to find as many vulnerabilities in the code in the given time period, but holds no responsibilities for the findings provided in this document. A security audit by the team is not an endorsement of the underlying business or product. The audit was time-boxed and the review of the code was solely on the security aspects of the Solidity implementation of the contracts.
+
+# Risk Classification
+
+|            |        | Impact |        |     |
+| ---------- | ------ | ------ | ------ | --- |
+|            |        | High   | Medium | Low |
+|            | High   | H      | H/M    | M   |
+| Likelihood | Medium | H/M    | M      | M/L |
+|            | Low    | M      | M/L    | L   |
+
+We use the [CodeHawks](https://docs.codehawks.com/hawks-auditors/how-to-evaluate-a-finding-severity) severity matrix to determine severity. See the documentation for more details.
+
+# Audit Details
+
+- Commit Hash: e30d199697bbc822b646d76533b66b7d529b8ef5
+
+## Scope
+
+```
+./src/
+|--- PuppyRaffle.sol
+```
+
+## Roles
+
+Owner - Deployer of the protocol, has the power to change the wallet address to which fees are sent through the `changeFeeAddress` function.
+Player - Participant of the raffle, has the power to enter the raffle with the `enterRaffle` function and refund value through `refund` function.
+
+# Executive Summary
+
+...
+Tastukesi
+
+## Issues found
+
+| Severity | Number of issues found |
+| -------- | ---------------------- |
+| High     | 3                      |
+| Medium   | 3                      |
+| Low      | 1                      |
+| Info     | 7                      |
+| Total    | 16                     |
+
+# Findings
+
+## HIGH
+
 ### [H-1] Reentrancy attack in `PuppyRaffle::refund` allows entratn to d
 
 IMPACT: HIGH
@@ -33,7 +146,6 @@ A player who has entered the raffle could have a `fallback/receive` function tha
 
  <details>
  <summary>Code Test </summary>
-    Place
 
 ```javascript
     function test_reentrancy() public  {
@@ -93,8 +205,6 @@ And this contract as well
 ```
 
  </details>
-
----
 
 **Recommended Mitigation:** To prevent this, we should have the PuppyRaffle::refund function update the `players` array before making the external call. Additionally, we should move the event
 
@@ -170,17 +280,11 @@ require(address(this).balance ==
   uint256(totalFees), "PuppyRaffle: There are currently players active!");
 ```
 
-Altough you could yse `selfDestruct` to send ETH to this contract in order for the values to match and withdraw the fees, this is clearly not the intended design of the protocol. At some point, there will be to much `balance` in the contract that the above `require` will be imposible to hit.
-
-```javascript
-selfdestruct(payable(address(target)));
-```
-
 <details>
 <summary></summary>
 
 ```javascript
-         function testTotalFeesOverflow() public playersEntered {
+    function testTotalFeesOverflow() public playersEntered {
         // We finish a raffle of 4 to collect some fees
         vm.warp(block.timestamp + duration + 1);
         vm.roll(block.number + 1);
@@ -215,6 +319,12 @@ selfdestruct(payable(address(target)));
     }
 ```
 
+Altough you could yse `selfDestruct` to send ETH to this contract in order for the values to match and withdraw the fees, this is clearly not the intended design of the protocol. At some point, there will be to much `balance` in the contract that the above `require` will be imposible to hit.
+
+```javascript
+selfdestruct(payable(address(target)));
+```
+
 </details>
 
 **Recommended Mitigation:** There a few possible mitigations.
@@ -229,17 +339,14 @@ selfdestruct(payable(address(target)));
 
 There are more attack vectors with that final require, so we recommend removing it regardless
 
----
-
-
 ----
 
-# MEDIUM
+## MEDIUM
 
 ### [M-1] Looping thought players array to check duplicates in `PuppyRuffles::enterRuffle` is a potential denial of service (DoS) attack incrementing the gas costs for the future entrants
 
-IMPACT: MEDIUM
-LIKELIHOOD: MEDIUM
+- IMPACT: MEDIUM
+- LIKELIHOOD: MEDIUM
 
 **Description:** The `PuppyRuffles::enterRuffle` loops though the `players` array to check for duplicates. However, the longer the `PuppyRuffles::players` array is, the more checks a new playuer will have to make.
 This means the gast cost for players who enter right when the raffle starts will be dramatically lower than those who enter later.
@@ -366,7 +473,7 @@ Also, true winners would not get paid out and someone else could take their mone
 
 -----
 
-# LOW
+## LOW
 
 ### [L-1] `PuppyRuffle::getActivePlayerIndex` returns 0 for non-existent players and for players at index 0, causing a player at index 0 to incorrectly think they have not entered the raffle
 
@@ -397,7 +504,7 @@ You could also reserve the 0th position for any competition, but a better soluti
 
 -----
 
-# Gas
+## GAS
 
 ### [G-1] Unchanged state variables should be declared constatn or inmutable
 
@@ -422,8 +529,7 @@ Everytime you call `players.lenght` you read from storage, as opposed to memory 
 -----
 
 
-# Informational
-
+## Informational/Non-critics
 
 ### [I-1] Solidity pragma should be specific, not wide
 
@@ -437,7 +543,7 @@ Consider using a specific version of Solidity in your contracts instead of a wid
 
 ### [I-2] Using a outdated version of Solidity is not recommended.
 
-Please use another .
+Please use a updated version .
 (From: https://github.com/crytic/slither/wiki/Detector-Documentation)
 
 solc frequently releases new compiler versions. Using an old version prevents access to new Solidity security checks. We also recommend avoiding complex pragma statement.
@@ -456,25 +562,39 @@ Use a simple pragma version that allows any of these versions. Consider using th
 
 ### [I-3] Missing checks for `address(0)` when assigning values to address state variables
 
+
 Assigning values to address state variables without checking for `address(0)`.
 
-- Found in src/PuppyRaffle.sol [Line: 65](src\PuppyRaffle.sol#L65)
+- Found in src/PuppyRaffle.sol [Line: 66](src\PuppyRaffle.sol#L66)
+	```javascript
+    
+        constructor(){
+        //...
+	        feeAddress = _feeAddress;
+        }
+	```
 
-  ```solidity
-          // input validation
-  ```
+- Found in src/PuppyRaffle.sol [Line: 206](src\PuppyRaffle.sol#L205)
 
-- Found in src/PuppyRaffle.sol [Line: 200](src\PuppyRaffle.sol#L200)
+	```javascript
+        previousWinner = winner; //vanity, doesn't matter much
+	```
 
-  ```solidity
-          delete players; //e resetting the players array
-  ```
+- Found in src/PuppyRaffle.sol [Line: 241](src\PuppyRaffle.sol#L241)
 
-- Found in src/PuppyRaffle.sol [Line: 234](src\PuppyRaffle.sol#L234)
+	```javascript
+    function changeFeeAddress(address newFeeAddress) external onlyOwner {
+        feeAddress = newFeeAddress;
+        emit FeeAddressChanged(newFeeAddress);
+    }
+	```
 
-  ```solidity
-      /// audi Need a if to check if newFeeAddress is null = address(0)
-  ```
+Solution:
+
+```diff
++       require(addressToCheck != address(0), "PuppyRaffle: That address cannot be zero");
+
+```
 
 ### [I-4] `PuppyRaffle::selectWinner` does not follow CEI, which is not the best practice
 
@@ -516,7 +636,3 @@ Everytime you want to change a state, emit a event to communicate to the other c
 The declaration of an unused function is a waste of gas.
 
 ----
-
-# Additional findings not taught in course
-
-## MEV
