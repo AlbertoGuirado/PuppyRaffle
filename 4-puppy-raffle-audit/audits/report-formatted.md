@@ -11,10 +11,10 @@ header-includes:
 
 <!-- Your report starts here! -->
 
-Prepared by: [Cyfrin](https://cyfrin.io)
+Prepared by: Alberto G.F
 Lead Auditors:
 
-- xxxxxxx
+- Result of the Smart Contract security learning course
 
 # Table of Contents
 
