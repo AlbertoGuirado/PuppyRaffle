@@ -7,8 +7,6 @@ header-includes:
   - \usepackage{graphicx}
 ---
 
-
-
 <!-- Your report starts here! -->
 
 Prepared by: Alberto G.F
@@ -63,7 +61,7 @@ This project is to enter a raffle to win a cute dog NFT. The protocol should do 
 
 # Disclaimer
 
-The YOUR_NAME_HERE team makes all effort to find as many vulnerabilities in the code in the given time period, but holds no responsibilities for the findings provided in this document. A security audit by the team is not an endorsement of the underlying business or product. The audit was time-boxed and the review of the code was solely on the security aspects of the Solidity implementation of the contracts.
+The Albert GF team makes all effort to find as many vulnerabilities in the code in the given time period, but holds no responsibilities for the findings provided in this document. A security audit by the team is not an endorsement of the underlying business or product. The audit was time-boxed and the review of the code was solely on the security aspects of the Solidity implementation of the contracts.
 
 # Risk Classification
 
@@ -95,7 +93,6 @@ Player - Participant of the raffle, has the power to enter the raffle with the `
 # Executive Summary
 
 ...
-
 
 ## Issues found
 
@@ -339,7 +336,7 @@ selfdestruct(payable(address(target)));
 
 There are more attack vectors with that final require, so we recommend removing it regardless
 
-----
+---
 
 ## MEDIUM
 
@@ -470,8 +467,7 @@ Also, true winners would not get paid out and someone else could take their mone
 
 > Pull over push
 
-
------
+---
 
 ## LOW
 
@@ -502,7 +498,7 @@ function getActivePlayerIndex(address player) external view returns (uint256) {
 
 You could also reserve the 0th position for any competition, but a better solution might be to return an `int256` where the function returns -1 if the player is not in active.
 
------
+---
 
 ## GAS
 
@@ -526,8 +522,8 @@ Everytime you call `players.lenght` you read from storage, as opposed to memory 
             }
         }
 ```
------
 
+---
 
 ## Informational/Non-critics
 
@@ -562,32 +558,32 @@ Use a simple pragma version that allows any of these versions. Consider using th
 
 ### [I-3] Missing checks for `address(0)` when assigning values to address state variables
 
-
 Assigning values to address state variables without checking for `address(0)`.
 
 - Found in src/PuppyRaffle.sol [Line: 66](src\PuppyRaffle.sol#L66)
-	```javascript
-    
+
+  ```javascript
+
         constructor(){
         //...
-	        feeAddress = _feeAddress;
+          feeAddress = _feeAddress;
         }
-	```
+  ```
 
 - Found in src/PuppyRaffle.sol [Line: 206](src\PuppyRaffle.sol#L205)
 
-	```javascript
-        previousWinner = winner; //vanity, doesn't matter much
-	```
+  ```javascript
+  previousWinner = winner; //vanity, doesn't matter much
+  ```
 
 - Found in src/PuppyRaffle.sol [Line: 241](src\PuppyRaffle.sol#L241)
 
-	```javascript
+  ```javascript
     function changeFeeAddress(address newFeeAddress) external onlyOwner {
         feeAddress = newFeeAddress;
         emit FeeAddressChanged(newFeeAddress);
     }
-	```
+  ```
 
 Solution:
 
@@ -635,4 +631,4 @@ Everytime you want to change a state, emit a event to communicate to the other c
 
 The declaration of an unused function is a waste of gas.
 
-----
+---
